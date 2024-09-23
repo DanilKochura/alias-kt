@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -56,8 +57,10 @@ import kotlinx.coroutines.launch
 import lk.mzpo.alias.GameViewModel
 import lk.mzpo.alias.ui.theme.DarkGray
 import lk.mzpo.alias.ui.theme.DarkGreen
+import lk.mzpo.alias.ui.theme.FloatingBar
 import lk.mzpo.alias.ui.theme.GoldLight
 import lk.mzpo.alias.ui.theme.Test
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalWearMaterialApi::class)
 @Composable
@@ -71,9 +74,13 @@ fun TeamTurnScreen(
     val currentWord = viewModel.getCurrentWord()
     val alpha by animateFloatAsState(targetValue = if (isSwiping) 0f else 1f)
     val scale by animateFloatAsState(targetValue = if (isSwiping) 0.5f else 1f)
+    val ofset by animateFloatAsState(targetValue = if (isSwiping) 150f else 0f)
     // Делаем переменную remainingTime изменяемой
     var remainingTime by remember { mutableStateOf(initialTime) }
     var showDialog by remember { mutableStateOf(false) }
+    var ofsetDirection by remember {
+        mutableStateOf(-1)
+    }
     // Таймер
     LaunchedEffect(remainingTime) {
         if (remainingTime > 0) {
@@ -85,10 +92,18 @@ fun TeamTurnScreen(
     }
     var isProcessingSwipe by remember { mutableStateOf(false) } // Флаг для блокировки многократных свайпов
     val coroutineScope = rememberCoroutineScope()
-
+    var  size_circle by remember { mutableStateOf(0) }
+    var  x by remember { mutableStateOf(0) }
+    var  y by remember { mutableStateOf(0) }
+    LaunchedEffect(key1 = "") {
+        x = Random.nextInt(-100, 200)
+        y = Random.nextInt(-10, 310)
+        size_circle = Random.nextInt(40, 89)
+    }
     Scaffold(
 //        topBar = { TopAppBar(title = { Text( currentTeam!!.name) }) }
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -97,6 +112,7 @@ fun TeamTurnScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { /* Окно не закроется, пока не выбрана команда */ },
@@ -137,10 +153,10 @@ fun TeamTurnScreen(
                     val offset = 0f // Смещение на 10 пикселей вниз
                     val path = Path().apply {
                         moveTo(0f, 0f) // Начало пути
-                        lineTo(0f, height - 50f +offset) // Левая нижняя часть блока
+                        lineTo(0f, height - 100f +offset) // Левая нижняя часть блока
                         quadraticBezierTo(
-                            width / 2, height + 50f+offset, // Центральная точка дуги
-                            width, height - 50f+offset  // Правая нижняя часть дуги
+                            width / 2, height + 100f+offset, // Центральная точка дуги
+                            width, height - 100f+offset  // Правая нижняя часть дуги
                         )
                         lineTo(width, 0f) // Правая верхняя часть блока
                         close() // Закрываем путь
@@ -156,57 +172,71 @@ fun TeamTurnScreen(
 
                 }
             }
-            Box(
-                modifier = Modifier
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures(
-                            onDragEnd = {
-                                isProcessingSwipe =
-                                    false // Разблокируем свайп после завершения жеста
-                            }
-                        ) { _, dragAmount ->
-                            if (!isProcessingSwipe) {
-                                coroutineScope.launch {
-                                    isProcessingSwipe = true // Блокируем новые свайпы
 
-                                    if (dragAmount < -5) {
-                                        // Свайп вверх (угадано)
-                                        isSwiping = true
-                                        kotlinx.coroutines.delay(200)
-                                        if (remainingTime > 0)
-                                        {
-                                            viewModel.onSwipeUp() // Угадано, увеличиваем счет
-                                        } else
-                                        {
-                                            showDialog = true  // Показываем диалог для выбора команды
-                                        }
-                                        isSwiping = false
-                                    } else if (dragAmount > 5) {
-                                        isSwiping = true
-                                        kotlinx.coroutines.delay(200)
-                                        // Свайп вниз (не угадано)
+            Box(modifier = Modifier.fillMaxWidth())
+            {
+//                for (i in 0 until 5)
+//                {
+//                    FloatingBar(x = Random.nextInt(-100, 200), y = Random.nextInt(-10, 310), size = Random.nextInt(40, 89))
+//                }
+//                    FloatingBar(x = x, y = y, size = size_circle)
 
-                                        viewModel.onSwipeDown() // Пропущено, увеличиваем счет
-                                        if (remainingTime == 0)
-                                        {
-                                            onTimeEnd()
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .pointerInput(Unit) {
+                            detectVerticalDragGestures(
+                                onDragEnd = {
+                                    isProcessingSwipe =
+                                        false // Разблокируем свайп после завершения жеста
+                                }
+                            ) { _, dragAmount ->
+                                if (!isProcessingSwipe) {
+                                    coroutineScope.launch {
+                                        isProcessingSwipe = true // Блокируем новые свайпы
+
+                                        if (dragAmount < -5) {
+                                            // Свайп вверх (угадано)
+                                            ofsetDirection = -1
+                                            isSwiping = true
+                                            kotlinx.coroutines.delay(200)
+                                            if (remainingTime > 0) {
+                                                viewModel.onSwipeUp() // Угадано, увеличиваем счет
+                                            } else {
+                                                showDialog =
+                                                    true  // Показываем диалог для выбора команды
+                                            }
+                                            isSwiping = false
+                                        } else if (dragAmount > 5) {
+                                            ofsetDirection = 1
+                                            isSwiping = true
+                                            kotlinx.coroutines.delay(200)
+                                            // Свайп вниз (не угадано)
+
+                                            viewModel.onSwipeDown() // Пропущено, увеличиваем счет
+                                            if (remainingTime == 0) {
+                                                onTimeEnd()
+                                            }
+                                            isSwiping = false
                                         }
-                                        isSwiping = false
                                     }
                                 }
                             }
                         }
-                    }
-                    .alpha(alpha)
-                    .scale(scale)
-                    .size(250.dp)
-                    .clip(CircleShape)
-                    .border(1.dp, Color.Black, CircleShape)
-                    .shadow(10.dp, CircleShape)
-                    .background(Color.LightGray, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = currentWord.capitalize(), textAlign = TextAlign.Center, fontSize = 20.sp)
+                        .offset(y = ofset.times(ofsetDirection).dp)
+                        .alpha(alpha)
+                        .scale(scale)
+                        .size(250.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.Black, CircleShape)
+                        .shadow(10.dp, CircleShape)
+                        .background(Color.LightGray, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = currentWord.capitalize(), textAlign = TextAlign.Center, fontSize = 20.sp)
+
+                }
             }
 
             Box(modifier = Modifier.fillMaxWidth())
@@ -219,10 +249,10 @@ fun TeamTurnScreen(
                     val width = size.width
                     val height = size.height
                     val path = Path().apply {
-                        moveTo(0f, 50f) // Начало пути (левый край)
+                        moveTo(0f, 100f) // Начало пути (левый край)
                         quadraticBezierTo(
-                            width / 2, -50f, // Центральная точка для вогнутой дуги
-                            width, 50f  // Конечная точка (правый край)
+                            width / 2, -100f, // Центральная точка для вогнутой дуги
+                            width, 100f  // Конечная точка (правый край)
                         )
                         lineTo(width, height) // Правая часть блока
                         lineTo(0f, height) // Левая часть блока
@@ -235,9 +265,11 @@ fun TeamTurnScreen(
                 }
                 Column (modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
                     Text(text = viewModel.getSkipped().toString(), fontSize = 50.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    Text(text = if (remainingTime > 0) "0:"+remainingTime.toString() else "последнее слово", fontSize = 20.sp, modifier = Modifier.border(
-                        1.dp, DarkGray, RoundedCornerShape(10f)
-                    ).padding(5.dp))
+                    Text(text = if (remainingTime > 0) "0:"+remainingTime.toString() else "последнее слово", fontSize = 20.sp, modifier = Modifier
+                        .border(
+                            1.dp, DarkGray, RoundedCornerShape(10f)
+                        )
+                        .padding(5.dp))
                 }
             }
         }

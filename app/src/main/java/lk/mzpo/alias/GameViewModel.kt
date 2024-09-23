@@ -39,7 +39,7 @@ class GameViewModel : ViewModel() {
     private var _currentWordIndex by mutableStateOf(0)
     private var _guessedWords by mutableStateOf(0)
     private var _skippedWords by mutableStateOf(0)
-    var _remainingTime by mutableStateOf(10)
+    var _remainingTime by mutableStateOf(60)
     var _currentWords: ArrayList<String> = arrayListOf() // Слова для текущего раунда
     public var winningScore by mutableStateOf(50)
 
