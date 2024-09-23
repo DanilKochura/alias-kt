@@ -1,0 +1,23 @@
+{
+  "easy": [
+    "apple",
+    "car",
+    "dog",
+    "tree"
+  ],
+  "medium": [
+    "phenomenon",
+    "lightning",
+    "conversation",
+    "puzzle"
+  ],
+  "hard": [
+    "antidisestablishmentarianism",
+    "quintessential",
+    "hyperbolic"
+  ],
+  "all_words": [
+    "apple", "car", "dog", "tree", "phenomenon", "lightning", "conversation",
+    "antidisestablishmentarianism", "quintessential", "hyperbolic"
+  ]
+}
