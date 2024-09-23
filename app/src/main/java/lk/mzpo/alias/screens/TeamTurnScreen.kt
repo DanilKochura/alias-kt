@@ -18,9 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -54,6 +57,7 @@ import lk.mzpo.alias.GameViewModel
 import lk.mzpo.alias.ui.theme.DarkGray
 import lk.mzpo.alias.ui.theme.DarkGreen
 import lk.mzpo.alias.ui.theme.GoldLight
+import lk.mzpo.alias.ui.theme.Test
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalWearMaterialApi::class)
 @Composable
@@ -69,14 +73,14 @@ fun TeamTurnScreen(
     val scale by animateFloatAsState(targetValue = if (isSwiping) 0.5f else 1f)
     // Делаем переменную remainingTime изменяемой
     var remainingTime by remember { mutableStateOf(initialTime) }
-
+    var showDialog by remember { mutableStateOf(false) }
     // Таймер
     LaunchedEffect(remainingTime) {
         if (remainingTime > 0) {
             delay(1000L) // Задержка в 1 секунду
             remainingTime -= 1 // Уменьшаем значение времени
         } else {
-            onTimeEnd() // Время закончилось
+            viewModel.onTimeEnd() // Время закончилось
         }
     }
     var isProcessingSwipe by remember { mutableStateOf(false) } // Флаг для блокировки многократных свайпов
@@ -93,6 +97,34 @@ fun TeamTurnScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { /* Окно не закроется, пока не выбрана команда */ },
+
+                    title = { Text(text = "Кому засчитать последнее слово?") },
+                    text = { Text(text = "Выберите команду, чтобы засчитать последнее слово.") },
+                    confirmButton = {
+                        Column {
+                            // Отображаем список команд для выбора
+                            viewModel._teams.forEachIndexed { index, team ->
+                                OutlinedButton(
+                                    onClick = {
+                                        viewModel.assignLastWordToTeam(index)  // Засчитываем слово команде
+                                        showDialog = false  // Закрываем диалог после выбора
+                                        onTimeEnd()
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(text = team.name)
+                                }
+                            }
+                        }
+                    },
+                    dismissButton = {
+                        // Если нужно, можно добавить кнопку для отмены
+                    }
+                )
+            }
             Box(modifier = Modifier.fillMaxWidth())
             {
                 Canvas(
@@ -115,7 +147,7 @@ fun TeamTurnScreen(
                     }
                     drawPath(
                         path = path,
-                        color = DarkGreen
+                        color = Color(0xFFD5C058)
                     )
                 }
                 Column (modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
@@ -141,13 +173,24 @@ fun TeamTurnScreen(
                                         // Свайп вверх (угадано)
                                         isSwiping = true
                                         kotlinx.coroutines.delay(200)
-                                        viewModel.onSwipeUp() // Угадано, увеличиваем счет
+                                        if (remainingTime > 0)
+                                        {
+                                            viewModel.onSwipeUp() // Угадано, увеличиваем счет
+                                        } else
+                                        {
+                                            showDialog = true  // Показываем диалог для выбора команды
+                                        }
                                         isSwiping = false
                                     } else if (dragAmount > 5) {
                                         isSwiping = true
                                         kotlinx.coroutines.delay(200)
                                         // Свайп вниз (не угадано)
+
                                         viewModel.onSwipeDown() // Пропущено, увеличиваем счет
+                                        if (remainingTime == 0)
+                                        {
+                                            onTimeEnd()
+                                        }
                                         isSwiping = false
                                     }
                                 }
@@ -158,6 +201,7 @@ fun TeamTurnScreen(
                     .scale(scale)
                     .size(250.dp)
                     .clip(CircleShape)
+                    .border(1.dp, Color.Black, CircleShape)
                     .shadow(10.dp, CircleShape)
                     .background(Color.LightGray, CircleShape),
                 contentAlignment = Alignment.Center
@@ -186,12 +230,12 @@ fun TeamTurnScreen(
                     }
                     drawPath(
                         path = path,
-                        color = Color.Gray,
+                        color = Color(0xFFDBB8B8),
                     )
                 }
                 Column (modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
                     Text(text = viewModel.getSkipped().toString(), fontSize = 50.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    Text(text = "0:"+remainingTime.toString(), fontSize = 20.sp, modifier = Modifier.border(
+                    Text(text = if (remainingTime > 0) "0:"+remainingTime.toString() else "последнее слово", fontSize = 20.sp, modifier = Modifier.border(
                         1.dp, DarkGray, RoundedCornerShape(10f)
                     ).padding(5.dp))
                 }

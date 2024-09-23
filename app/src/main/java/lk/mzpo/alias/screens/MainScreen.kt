@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import lk.mzpo.alias.R
 import lk.mzpo.alias.ui.theme.DarkGray
 import lk.mzpo.alias.ui.theme.Gold
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,11 +51,18 @@ fun MainScreen(onStartGame: () -> Unit) {
         initialValue = 0f,
         targetValue = 10f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = androidx.compose.animation.core.LinearEasing),
+            animation = tween(2000, easing = androidx.compose.animation.core.EaseIn),
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
-
+    val animatedOffset1 by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = Random.nextDouble(.0, 20.0).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(5000, easing = androidx.compose.animation.core.EaseIn),
+            repeatMode = RepeatMode.Reverse
+        ), label = ""
+    )
     Scaffold(
         modifier = Modifier.background(DarkGray),
         bottomBar =
@@ -95,7 +103,7 @@ fun MainScreen(onStartGame: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(200.dp)
-                    .offset(x = (75).dp - animatedOffset.dp.times(3), y = 50.dp+animatedOffset.dp) // Нахлест на текст
+                    .offset(x = (75).dp+animatedOffset1.dp - animatedOffset.dp.times(3), y = 50.dp+animatedOffset.dp) // Нахлест на текст
                     .shadow(5.dp, CircleShape)
                     .background(Color.Gray, shape = CircleShape)
                     .align(Alignment.TopEnd)
@@ -116,7 +124,7 @@ fun MainScreen(onStartGame: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(150.dp)
-                    .offset(y = 50.dp+animatedOffset.dp, x = (-75).dp) // Полукруг, чуть ниже текста
+                    .offset(y = 50.dp+animatedOffset.dp, x = (-75).dp+animatedOffset1.dp) // Полукруг, чуть ниже текста
                     .shadow(10.dp, CircleShape)
                     .background(Color.LightGray, shape = CircleShape)
                     .align(Alignment.CenterStart)

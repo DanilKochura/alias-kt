@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import java.io.InputStream
 import com.google.gson.Gson
 import lk.mzpo.alias.Dictionary.Companion.COMPARER
+import kotlin.random.Random
 
 // Модель для хранения слов
 data class WordDictionary(
@@ -38,8 +39,8 @@ class GameViewModel : ViewModel() {
     private var _currentWordIndex by mutableStateOf(0)
     private var _guessedWords by mutableStateOf(0)
     private var _skippedWords by mutableStateOf(0)
-    var _remainingTime by mutableStateOf(60)
-    var _currentWords: List<String> = listOf() // Слова для текущего раунда
+    var _remainingTime by mutableStateOf(10)
+    var _currentWords: ArrayList<String> = arrayListOf() // Слова для текущего раунда
     public var winningScore by mutableStateOf(50)
 
 
@@ -54,15 +55,15 @@ class GameViewModel : ViewModel() {
 
 
     // Метод для установки списка слов в зависимости от режима игры
-    fun setWordsForMode(mode: String, wordCount: Int) {
-        _currentWords = when (mode) {
-            "easy" -> easyWords.shuffled().take(wordCount)
-            "medium" -> mediumWords.shuffled().take(wordCount)
-            "hard" -> hardWords.shuffled().take(wordCount)
-            "all_words" -> allWords.shuffled().take(wordCount)
-            else -> emptyList()
-        }
-    }
+//    fun setWordsForMode(mode: String, wordCount: Int) {
+//        _currentWords = when (mode) {
+//            "easy" -> easyWords.shuffled().take(wordCount)
+//            "medium" -> mediumWords.shuffled().take(wordCount)
+//            "hard" -> hardWords.shuffled().take(wordCount)
+//            "all_words" -> allWords.shuffled().take(wordCount)
+//            else -> emptyList()
+//        }
+//    }
 
     fun setCommonModes(mode: List<String>, wordCount: Int = 1000) {
         val list = arrayListOf<String>()
@@ -70,6 +71,19 @@ class GameViewModel : ViewModel() {
             list+=COMPARER[it]!!.toList()
         }
         _currentWords = list
+        _currentWordIndex = Random.nextInt(0 ,_currentWords.size)
+    }
+    var lastWord by mutableStateOf<String?>(null)  // Переменная для хранения последнего слова
+    var lastWordTeamId by mutableStateOf<Int?>(null)  // Переменная для хранения последнего слова
+
+    // Метод для обработки завершения времени
+    fun onTimeEnd() {
+        lastWord = getCurrentWord()  // Сохраняем последнее слово
+    }
+
+    // Метод для засчитывания последнего слова выбранной команде
+    fun assignLastWordToTeam(teamIndex: Int) {
+        lastWordTeamId = teamIndex
     }
 
     // Получаем текущую команду с проверкой на наличие команд
@@ -93,7 +107,8 @@ class GameViewModel : ViewModel() {
 
     // Переход к следующему слову
     private fun moveToNextWord() {
-        _currentWordIndex = (_currentWordIndex + 1) % _currentWords.size
+        _currentWords.removeAt(_currentWordIndex)
+        _currentWordIndex = _currentWords.indexOf(_currentWords.random())
     }
 
     fun loadWordsFromJson(context: Context): Map<String, List<String>> {
@@ -171,6 +186,15 @@ class GameViewModel : ViewModel() {
         _teams[_currentTeamIndex].score+=score
         _guessedWords = 0
         _skippedWords = 0
+    }
+
+    fun setLastWordPoints() {
+        if (lastWordTeamId !== null)
+        {
+            _teams[lastWordTeamId!!].score+=1
+        }
+        lastWord = null
+        lastWordTeamId = null
     }
 }
 

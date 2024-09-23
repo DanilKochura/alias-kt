@@ -91,6 +91,7 @@ fun AliasGameApp(gameViewModel: GameViewModel) {
                 viewModel = gameViewModel,
                 onConfirm = { score ->
                     gameViewModel.incrementScore(score = score)
+                    gameViewModel.setLastWordPoints()
                     gameViewModel.wordList.clear()
                     gameViewModel.moveToNextTeam()
                     navController.navigate("startScreen") }
@@ -102,7 +103,6 @@ fun AliasGameApp(gameViewModel: GameViewModel) {
                 viewModel = gameViewModel,
                 onConfirm = {
 //                    gameViewModel.reset()
-                    Log.d("MyLog", "rEDIRECTED")
                     navController.navigate("mainScreen")
                 }
             )
