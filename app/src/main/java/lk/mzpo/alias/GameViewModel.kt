@@ -135,6 +135,7 @@ class GameViewModel : ViewModel() {
     // Переход хода к следующей команде
     fun moveToNextTeam() {
         _currentTeamIndex = (_currentTeamIndex + 1) % _teams.size
+        moveToNextWord()
     }
 
     fun getCurrentTeamIndex(): Int {
@@ -193,6 +194,7 @@ class GameViewModel : ViewModel() {
         {
             _teams[lastWordTeamId!!].score+=1
         }
+        moveToNextWord()
         lastWord = null
         lastWordTeamId = null
     }

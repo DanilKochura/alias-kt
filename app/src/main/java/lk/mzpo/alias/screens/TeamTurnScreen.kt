@@ -41,11 +41,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.ExperimentalWearMaterialApi
@@ -92,9 +94,9 @@ fun TeamTurnScreen(
     }
     var isProcessingSwipe by remember { mutableStateOf(false) } // Флаг для блокировки многократных свайпов
     val coroutineScope = rememberCoroutineScope()
-    var  size_circle by remember { mutableStateOf(0) }
-    var  x by remember { mutableStateOf(0) }
-    var  y by remember { mutableStateOf(0) }
+    var size_circle by remember { mutableStateOf(0) }
+    var x by remember { mutableStateOf(0) }
+    var y by remember { mutableStateOf(0) }
     LaunchedEffect(key1 = "") {
         x = Random.nextInt(-100, 200)
         y = Random.nextInt(-10, 310)
@@ -153,22 +155,42 @@ fun TeamTurnScreen(
                     val offset = 0f // Смещение на 10 пикселей вниз
                     val path = Path().apply {
                         moveTo(0f, 0f) // Начало пути
-                        lineTo(0f, height - 100f +offset) // Левая нижняя часть блока
+                        lineTo(0f, height - 100f + offset) // Левая нижняя часть блока
                         quadraticBezierTo(
-                            width / 2, height + 100f+offset, // Центральная точка дуги
-                            width, height - 100f+offset  // Правая нижняя часть дуги
+                            width / 2, height + 100f + offset, // Центральная точка дуги
+                            width, height - 100f + offset  // Правая нижняя часть дуги
                         )
                         lineTo(width, 0f) // Правая верхняя часть блока
                         close() // Закрываем путь
                     }
                     drawPath(
                         path = path,
-                        color = Color(0xFFD5C058)
+                        brush = Brush.verticalGradient(
+                            listOf(
+                                Color(0xFFF1D343),
+                                Color(0xFFBEA949)
+                            )
+                        ),
+//                        color = Color(0xFFD5C058)
                     )
                 }
-                Column (modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
-                    Text(text = viewModel.getCurrentTeam()!!.name, fontSize = 25.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    Text(text = viewModel.getGuessed().toString(), fontSize = 50.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = viewModel.getCurrentTeam()!!.name,
+                        fontSize = 25.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = viewModel.getGuessed().toString(),
+                        fontSize = 50.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                 }
             }
@@ -229,12 +251,22 @@ fun TeamTurnScreen(
                         .scale(scale)
                         .size(250.dp)
                         .clip(CircleShape)
-                        .border(1.dp, Color.Black, CircleShape)
-                        .shadow(10.dp, CircleShape)
-                        .background(Color.LightGray, CircleShape),
+                        .shadow(20.dp, CircleShape, clip = true)
+                        .background(
+                            Brush.radialGradient(
+                                listOf(
+                                    Color.LightGray,
+                                    Color(0xFF7A7A7A)
+                                )
+                            ), CircleShape
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = currentWord.capitalize(), textAlign = TextAlign.Center, fontSize = 20.sp)
+                    Text(
+                        text = currentWord.capitalize(),
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+                    )
 
                 }
             }
@@ -260,18 +292,59 @@ fun TeamTurnScreen(
                     }
                     drawPath(
                         path = path,
-                        color = Color(0xFFDBB8B8),
+                        brush = Brush.verticalGradient(
+                            listOf(
+                                Color(0xFFCC8B8B),
+                                Color(0xFFDBB8B8)
+                            )
+                        ),
+//                        color = Color(0xFFDBB8B8),
                     )
                 }
-                Column (modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
-                    Text(text = viewModel.getSkipped().toString(), fontSize = 50.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    Text(text = if (remainingTime > 0) "0:"+remainingTime.toString() else "последнее слово", fontSize = 20.sp, modifier = Modifier
-                        .border(
-                            1.dp, DarkGray, RoundedCornerShape(10f)
-                        )
-                        .padding(5.dp))
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = viewModel.getSkipped().toString(),
+                        fontSize = 50.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = if (remainingTime > 0) "0:" + remainingTime.toString() else "последнее слово",
+                        fontSize = 20.sp,
+                        modifier = Modifier
+                            .border(
+                                1.dp, DarkGray, RoundedCornerShape(10f)
+                            )
+                            .padding(5.dp)
+                    )
                 }
             }
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun Circle3d() {
+    Column(Modifier.background(DarkGray)) {
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .clip(CircleShape)
+//                .border(1.dp, Color.Black, CircleShape)
+                .shadow(20.dp, CircleShape, clip = true)
+                .background(
+                    Brush.radialGradient(listOf(Color.LightGray, Color.White)),
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "Test", textAlign = TextAlign.Center, fontSize = 20.sp)
         }
     }
 }
