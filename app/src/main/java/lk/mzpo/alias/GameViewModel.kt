@@ -1,6 +1,7 @@
 package lk.mzpo.alias
 
 import android.content.Context
+import android.media.MediaPlayer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -197,6 +198,14 @@ class GameViewModel : ViewModel() {
         moveToNextWord()
         lastWord = null
         lastWordTeamId = null
+    }
+
+    fun playSound(context: Context, soundResId: Int) {
+        val mediaPlayer = MediaPlayer.create(context, soundResId)
+        mediaPlayer.setOnCompletionListener {
+            it.release() // Освободите ресурсы после завершения
+        }
+        mediaPlayer.start()
     }
 }
 

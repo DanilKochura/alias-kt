@@ -1,5 +1,6 @@
 package lk.mzpo.alias.screens
 
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
@@ -45,6 +46,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +59,7 @@ import androidx.wear.compose.material.swipeable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lk.mzpo.alias.GameViewModel
+import lk.mzpo.alias.R
 import lk.mzpo.alias.ui.theme.DarkGray
 import lk.mzpo.alias.ui.theme.DarkGreen
 import lk.mzpo.alias.ui.theme.FloatingBar
@@ -71,6 +74,7 @@ fun TeamTurnScreen(
     initialTime: Int,
     onTimeEnd: () -> Unit
 ) {
+    val ctx = LocalContext.current
     val currentTeam = viewModel.getCurrentTeam() // Текущая команда
     var isSwiping by remember { mutableStateOf(false) }
     val currentWord = viewModel.getCurrentWord()
@@ -89,6 +93,7 @@ fun TeamTurnScreen(
             delay(1000L) // Задержка в 1 секунду
             remainingTime -= 1 // Уменьшаем значение времени
         } else {
+            viewModel.playSound(ctx, R.raw.end)
             viewModel.onTimeEnd() // Время закончилось
         }
     }
@@ -222,6 +227,7 @@ fun TeamTurnScreen(
                                             // Свайп вверх (угадано)
                                             ofsetDirection = -1
                                             isSwiping = true
+                                            viewModel.playSound(ctx, R.raw.up)
                                             kotlinx.coroutines.delay(200)
                                             if (remainingTime > 0) {
                                                 viewModel.onSwipeUp() // Угадано, увеличиваем счет
@@ -229,10 +235,12 @@ fun TeamTurnScreen(
                                                 showDialog =
                                                     true  // Показываем диалог для выбора команды
                                             }
+
                                             isSwiping = false
                                         } else if (dragAmount > 5) {
                                             ofsetDirection = 1
                                             isSwiping = true
+                                            viewModel.playSound(ctx, R.raw.down)
                                             kotlinx.coroutines.delay(200)
                                             // Свайп вниз (не угадано)
 
