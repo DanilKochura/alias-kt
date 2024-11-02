@@ -93,7 +93,7 @@ fun TeamTurnScreen(
             delay(1000L) // Задержка в 1 секунду
             remainingTime -= 1 // Уменьшаем значение времени
         } else {
-            viewModel.playSound(ctx, R.raw.end)
+            viewModel.playSound(ctx, R.raw.end_of_round)
             viewModel.onTimeEnd() // Время закончилось
         }
     }
