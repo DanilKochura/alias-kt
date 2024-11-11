@@ -15,9 +15,9 @@ import lk.mzpo.alias.ui.theme.AliasTheme
 
 class MainActivity : ComponentActivity() {
     private val gameViewModel: GameViewModel by viewModels()
-
+    private lateinit var analytics: FirebaseAnalytics
     override fun onCreate(savedInstanceState: Bundle?) {
-
+        analytics = Firebase.analytics
         super.onCreate(savedInstanceState)
         gameViewModel.loadWordsFromJson(this) // Загрузка словарей при старте
         setContent {
