@@ -93,7 +93,7 @@ fun TeamTurnScreen(
             delay(1000L) // Задержка в 1 секунду
             remainingTime -= 1 // Уменьшаем значение времени
         } else {
-            viewModel.playSound(ctx, R.raw.end_of_round)
+            viewModel.playSound(ctx, R.raw.end_of_round, viewModel.EndSound.value)
             viewModel.onTimeEnd() // Время закончилось
         }
     }
@@ -227,7 +227,7 @@ fun TeamTurnScreen(
                                             // Свайп вверх (угадано)
                                             ofsetDirection = -1
                                             isSwiping = true
-                                            viewModel.playSound(ctx, R.raw.up)
+                                            viewModel.playSound(ctx, R.raw.up, viewModel.TopSwipeSound.value)
                                             kotlinx.coroutines.delay(200)
                                             if (remainingTime > 0) {
                                                 viewModel.onSwipeUp() // Угадано, увеличиваем счет
@@ -240,7 +240,7 @@ fun TeamTurnScreen(
                                         } else if (dragAmount > 5) {
                                             ofsetDirection = 1
                                             isSwiping = true
-                                            viewModel.playSound(ctx, R.raw.down)
+                                            viewModel.playSound(ctx, R.raw.down, viewModel.DownSwipeSound.value)
                                             kotlinx.coroutines.delay(200)
                                             // Свайп вниз (не угадано)
 

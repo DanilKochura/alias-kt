@@ -45,6 +45,9 @@ class GameViewModel : ViewModel() {
     var _currentWords: ArrayList<String> = arrayListOf() // Слова для текущего раунда
     public var winningScore by mutableStateOf(50)
 
+    public val DownSwipeSound = mutableStateOf(1f)
+    public val TopSwipeSound = mutableStateOf(1f)
+    public val EndSound = mutableStateOf(1f)
 
     // Слова для всех категорий (Пример)
     private val easyWords = listOf("apple", "car", "dog", "tree")
@@ -201,11 +204,12 @@ class GameViewModel : ViewModel() {
         lastWordTeamId = null
     }
 
-    fun playSound(context: Context, soundResId: Int) {
+    fun playSound(context: Context, soundResId: Int, volume: Float) {
         val mediaPlayer = MediaPlayer.create(context, soundResId)
         mediaPlayer.setOnCompletionListener {
             it.release() // Освободите ресурсы после завершения
         }
+        mediaPlayer.setVolume(volume, volume);
         mediaPlayer.start()
     }
 }
